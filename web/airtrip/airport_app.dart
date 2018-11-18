@@ -1,6 +1,5 @@
 
 import 'dart:html';
-import 'dart:async';
 
 import "package:mdcdavan/mdcdavan.dart";
 
@@ -9,8 +8,9 @@ import 'signin_register.dart';
 import 'airport_list.dart';
 import 'trip_route_list.dart';
 
+const String APP_TITLE = 'DartAirTrip';
 const MdcTopAppBarData topBarDataPublic =
-const MdcTopAppBarData('DartAirTrip', '', const []);
+const MdcTopAppBarData(APP_TITLE, '', const []);
 
 const MdcDrawerData drawerDataPublic =
 const MdcDrawerData('Trip', 'Compose your flight list',
@@ -38,26 +38,25 @@ class AirportApp {
     new DivElement() ];
 
   PagesElem _pagesElem;
-  MdaDomEntryHandle _topBarEntry;
+  MdaDomEntryHandle<MdcTopAppBar> _topBarEntry;
   MdaDomEntryHandle<MdcDrawer> _drawerEntry;
-  MdaDomEntryHandle _signinRegEntry;
+  MdaDomEntryHandle<SigninRegister> _signinRegEntry;
   MdaDomEntryHandle<AirportList> _airportListEntry;
-  MdaDomEntryHandle _routeListEntry;
+  MdaDomEntryHandle<TripRouteList> _routeListEntry;
 
   List<AirportData> _routeList = new List<AirportData>();
 
   AirportApp(final Element parent) {
     //Topbar
-    _topBarEntry = new MdaDomEntryHandle.entry(parent, new MdcTopAppBar(topBarDataPublic));
+    _topBarEntry = new MdaDomEntryHandle<MdcTopAppBar>.entry(parent, new MdcTopAppBar(topBarDataPublic));
 
     //Drawer
     _drawerEntry = new MdaDomEntryHandle<MdcDrawer>.entry(parent, new MdcDrawer(drawerDataPublic));
 
-    Stream<MouseEvent> streamTopBar = _topBarEntry.getStreamMap()[MdcTopAppBar.STREAM_ID];
-    streamTopBar.forEach((MouseEvent e) {_drawerEntry.node.open = true;});
+    _topBarEntry.getStreamMap()[MdcTopAppBar.STREAM_ID].cast<MouseEvent>()
+        .forEach((MouseEvent e) {_drawerEntry.node.open = true;});
 
-    Stream<int> streamDrawer = _drawerEntry.getStreamMap()[MdcList.STREAM_ID];
-    streamDrawer.forEach(_handleMenuSelect);
+    _drawerEntry.getStreamMap()[MdcList.STREAM_ID].cast<int>().forEach(_handleMenuSelect);
 
     //Pages
     _pagesElem = new PagesElem(contentPageElement);
@@ -69,20 +68,18 @@ class AirportApp {
     new MdaDomEntryHandle<AirportList>.entry(
         contentPageElement[PageIndex.airportList.index], new AirportList(AIRPORT_LIST_DATA)
     );
-    Stream<int> airportPickStream = _airportListEntry.getStreamMap()[MdcList.STREAM_ID];
-    airportPickStream.forEach(_handleAirportPick);
+    _airportListEntry.getStreamMap()[MdcList.STREAM_ID].cast<int>().forEach(_handleAirportPick);
 
     //Routelist
-    _routeListEntry = new MdaDomEntryHandle.entry(
+    _routeListEntry = new MdaDomEntryHandle<TripRouteList>.entry(
         contentPageElement[PageIndex.routeList.index], new TripRouteList(_routeList)
     );
 
     //SigninRegister
-    _signinRegEntry = new MdaDomEntryHandle.entry(
+    _signinRegEntry = new MdaDomEntryHandle<SigninRegister>.entry(
         contentPageElement[PageIndex.signinRegister.index], new SigninRegister('')
     );
-    Stream<UserCredentials> streamLogin = _signinRegEntry.getStreamMap()[Signin.STREAM_ID];
-    streamLogin.forEach(_handleLogin);
+    _signinRegEntry.getStreamMap()[Signin.STREAM_ID].cast<UserCredentials>().forEach(_handleLogin);
 
     MdcSnackbar.attach(document.body);
   }
@@ -96,16 +93,17 @@ class AirportApp {
   void _handleLogin(final UserCredentials u) {
     print('AirportRoot._handleLogin : ' + u.userid);
 
-    _drawerEntry = _drawerEntry.replace(new MdcDrawer(drawerDataSignedIn));
+    _drawerEntry = _drawerEntry.replace<MdcDrawer>(new MdcDrawer(drawerDataSignedIn));
     Stream<int> streamDrawer = _drawerEntry.getStreamMap()[MdcList.STREAM_ID];
     streamDrawer.forEach(_handleMenuSelect);
 
-    _topBarEntry = _topBarEntry.replace(new MdcTopAppBar(new MdcTopAppBarData('DartAirTrip', u.userid, const [])));
+    _topBarEntry =
+        _topBarEntry.replace<MdcTopAppBar>(new MdcTopAppBar(new MdcTopAppBarData(APP_TITLE, u.userid, const [])));
 
     Stream<MouseEvent> streamTopBar = _topBarEntry.getStreamMap()[MdcTopAppBar.STREAM_ID];
     streamTopBar.forEach((MouseEvent e) {_drawerEntry.node.open = true;});
 
-    _signinRegEntry = _signinRegEntry.replace(new SigninRegister(u.userid));
+    _signinRegEntry = _signinRegEntry.replace<SigninRegister>(new SigninRegister(u.userid));
     Stream<MouseEvent> streamLogout = _signinRegEntry.getStreamMap()[Logout.STREAM_ID];
     streamLogout.forEach(_handleLogout);
 
@@ -115,17 +113,16 @@ class AirportApp {
   void _handleLogout(final MouseEvent e) {
     print('AirportRoot._handleLogout');
 
-    _drawerEntry = _drawerEntry.replace(new MdcDrawer(drawerDataPublic));
+    _drawerEntry = _drawerEntry.replace<MdcDrawer>(new MdcDrawer(drawerDataPublic));
     Stream<int> streamDrawer = _drawerEntry.getStreamMap()[MdcList.STREAM_ID];
     streamDrawer.forEach(_handleMenuSelect);
 
-    _topBarEntry = _topBarEntry.replace(new MdcTopAppBar(topBarDataPublic));
-    Stream<MouseEvent> streamTopBar = _topBarEntry.getStreamMap()[MdcTopAppBar.STREAM_ID];
-    streamTopBar.forEach((MouseEvent e) {_drawerEntry.node.open = true;});
+    _topBarEntry = _topBarEntry.replace<MdcTopAppBar>(new MdcTopAppBar(topBarDataPublic));
+    _topBarEntry.getStreamMap()[MdcTopAppBar.STREAM_ID].cast<MouseEvent>()
+        .forEach((MouseEvent e) {_drawerEntry.node.open = true;});
 
-    _signinRegEntry = _signinRegEntry.replace(new SigninRegister(''));
-    Stream<UserCredentials> streamLogin = _signinRegEntry.getStreamMap()[Signin.STREAM_ID];
-    streamLogin.forEach(_handleLogin);
+    _signinRegEntry = _signinRegEntry.replace<SigninRegister>(new SigninRegister(''));
+    _signinRegEntry.getStreamMap()[Signin.STREAM_ID].cast<UserCredentials>().forEach(_handleLogin);
 
     MdcSnackbar.show('Logout');
   }
@@ -134,7 +131,7 @@ class AirportApp {
     final AirportData apd = _airportListEntry.node.getFromList(index);
     print('AirportRoot._handleAirportPick : ' + apd.name);
     _routeList.add(apd);
-    _routeListEntry = _routeListEntry.replace( new TripRouteList(_routeList));
+    _routeListEntry = _routeListEntry.replace<TripRouteList>( new TripRouteList(_routeList));
     MdcSnackbar.show('Picked to route : ' + apd.name);
   }
 

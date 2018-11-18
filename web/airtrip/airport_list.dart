@@ -1,6 +1,5 @@
 
 import 'dart:html';
-import 'dart:async';
 
 import 'package:mdcdavan/mdcdavan.dart';
 
