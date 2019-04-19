@@ -53,14 +53,13 @@ class AirportApp {
     //Drawer
     _drawerEntry = new MdaDomEntryHandle<MdcDrawer>.entry(parent, new MdcDrawer(drawerDataPublic));
 
-    _topBarEntry.getStreamMap()[MdcTopAppBar.STREAM_ID].cast<MouseEvent>()
-        .forEach((MouseEvent e) {_drawerEntry.node.open = true;});
+    _topBarEntry.node.menuClick().forEach((MouseEvent e) {_drawerEntry.node.open = true;});
 
-    _drawerEntry.getStreamMap()[MdcList.STREAM_ID].cast<int>().forEach(_handleMenuSelect);
+    _drawerEntry.node.menuSelectStream().forEach(_handleMenuSelect);
 
     //Pages
     _pagesElem = new PagesElem(contentPageElement);
-    document.body.append(_pagesElem.element);
+    parent.append(_pagesElem.element);
     _pagesElem.selectPage(PageIndex.airportList.index);
 
     //Airportlist
@@ -68,7 +67,7 @@ class AirportApp {
     new MdaDomEntryHandle<AirportList>.entry(
         contentPageElement[PageIndex.airportList.index], new AirportList(AIRPORT_LIST_DATA)
     );
-    _airportListEntry.getStreamMap()[MdcList.STREAM_ID].cast<int>().forEach(_handleAirportPick);
+    _airportListEntry.node.menuSelectStream().forEach(_handleAirportPick);
 
     //Routelist
     _routeListEntry = new MdaDomEntryHandle<TripRouteList>.entry(
@@ -79,7 +78,7 @@ class AirportApp {
     _signinRegEntry = new MdaDomEntryHandle<SigninRegister>.entry(
         contentPageElement[PageIndex.signinRegister.index], new SigninRegister('')
     );
-    _signinRegEntry.getStreamMap()[Signin.STREAM_ID].cast<UserCredentials>().forEach(_handleLogin);
+    _signinRegEntry.node.userCredStream().forEach(_handleLogin);
 
     MdcSnackbar.attach(document.body);
   }
@@ -94,16 +93,15 @@ class AirportApp {
     print('AirportRoot._handleLogin : ' + u.userid);
 
     _drawerEntry = _drawerEntry.replace<MdcDrawer>(new MdcDrawer(drawerDataSignedIn));
-    _drawerEntry.getStreamMap()[MdcList.STREAM_ID].cast<int>().forEach(_handleMenuSelect);
+    _drawerEntry.node.menuSelectStream().forEach(_handleMenuSelect);
 
     _topBarEntry =
         _topBarEntry.replace<MdcTopAppBar>(new MdcTopAppBar(new MdcTopAppBarData(APP_TITLE, u.userid, const [])));
 
-    _topBarEntry.getStreamMap()[MdcTopAppBar.STREAM_ID].cast<MouseEvent>()
-        .forEach((MouseEvent e) {_drawerEntry.node.open = true;});
+    _topBarEntry.node.menuClick().forEach((MouseEvent e) {_drawerEntry.node.open = true;});
 
     _signinRegEntry = _signinRegEntry.replace<SigninRegister>(new SigninRegister(u.userid));
-    _signinRegEntry.getStreamMap()[Logout.STREAM_ID].cast<MouseEvent>().forEach(_handleLogout);
+    _signinRegEntry.node.logoutStream().forEach(_handleLogout);
 
     MdcSnackbar.show('Login : ' + u.userid);
   }
@@ -112,14 +110,13 @@ class AirportApp {
     print('AirportRoot._handleLogout');
 
     _drawerEntry = _drawerEntry.replace<MdcDrawer>(new MdcDrawer(drawerDataPublic));
-    _drawerEntry.getStreamMap()[MdcList.STREAM_ID].cast<int>().forEach(_handleMenuSelect);
+    _drawerEntry.node.menuSelectStream().forEach(_handleMenuSelect);
 
     _topBarEntry = _topBarEntry.replace<MdcTopAppBar>(new MdcTopAppBar(topBarDataPublic));
-    _topBarEntry.getStreamMap()[MdcTopAppBar.STREAM_ID].cast<MouseEvent>()
-        .forEach((MouseEvent e) {_drawerEntry.node.open = true;});
+    _topBarEntry.node.menuClick().forEach((MouseEvent e) {_drawerEntry.node.open = true;});
 
     _signinRegEntry = _signinRegEntry.replace<SigninRegister>(new SigninRegister(''));
-    _signinRegEntry.getStreamMap()[Signin.STREAM_ID].cast<UserCredentials>().forEach(_handleLogin);
+    _signinRegEntry.node.userCredStream().forEach(_handleLogin);
 
     MdcSnackbar.show('Logout');
   }

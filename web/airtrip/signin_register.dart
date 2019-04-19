@@ -22,7 +22,7 @@ class SigninRegTextField extends MdcTextField {
   }
 }
 
-class Logout extends MdaBaseElem implements MdaStreamElem<MouseEvent>  {
+class Logout extends MdaBaseElem {
 
   static const String STREAM_ID = 'LOGOUT';
 
@@ -35,14 +35,10 @@ class Logout extends MdaBaseElem implements MdaStreamElem<MouseEvent>  {
     element.classes.add(CSS_TEXT_FIELD);
   }
 
-  @override
-  StreamRef<MouseEvent> getStreamRef() =>
-      new StreamRef(STREAM_ID, _buttonElement.onClick);
+  Stream<MouseEvent> logoutStream() => _buttonElement.onClick;
 }
 
-class Signin extends MdaNodeElem implements MdaStreamElem<UserCredentials> {
-
-  static const String STREAM_ID = 'SIGNIN';
+class Signin extends MdaNodeElemStatic {
 
   SigninRegTextField _mdcInputEmail = SigninRegTextField('email', 'Email');
   SigninRegTextField _mdcInputUserId = SigninRegTextField('text', 'Userid');
@@ -65,11 +61,10 @@ class Signin extends MdaNodeElem implements MdaStreamElem<UserCredentials> {
        new SigninRegTextField('password', 'Password'));
   }
 
-  @override
-  StreamRef<UserCredentials> getStreamRef() =>
-    new StreamRef(STREAM_ID, _buttonElement.onClick
-        .map((MouseEvent e) => _getUserCred())
-        .where((UserCredentials u) => u.userid.isNotEmpty));
+  Stream<UserCredentials> userCredStream() =>
+      _buttonElement.onClick
+          .map((MouseEvent e) => _getUserCred())
+          .where((UserCredentials u) => u.userid.isNotEmpty);
 
   UserCredentials _getUserCred() =>
     new UserCredentials(_mdcInputEmail.getValue(), _mdcInputUserId.getValue(), _mdcInputPassword.getValue());
@@ -77,15 +72,28 @@ class Signin extends MdaNodeElem implements MdaStreamElem<UserCredentials> {
 
 class SigninRegister extends MdaNodeElem {
 
+  Signin _signin;
+  Logout _logout;
+
   SigninRegister(final String userId)
-    : super(new DivElement(), [_subNode(userId)]) {
+    : super(new DivElement()) {
+    buildWithChilds([_subNode(userId)]);
   }
 
-  static MdaBaseElem _subNode(final String userId) {
+  Stream<UserCredentials> userCredStream() =>
+      _signin.userCredStream();
+
+  Stream<MouseEvent> logoutStream() =>
+      _logout.logoutStream();
+
+  MdaBaseElem _subNode(final String userId) {
     if (userId.isEmpty) {
-      return new Signin.std();
+      _signin =  new Signin.std();
+      return _signin;
     }
 
-    return new Logout(userId);
+    _logout = new Logout(userId);
+
+    return _logout;
   }
 }

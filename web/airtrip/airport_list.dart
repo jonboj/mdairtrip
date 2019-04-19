@@ -25,9 +25,15 @@ const List<AirportData> AIRPORT_LIST_DATA = [
 class AirportList extends MdaNodeElem {
 
   final List<AirportData> _airportList;
+  final MdcList _list;
 
-  AirportList(final List<AirportData> this._airportList)
-   : super(new DivElement(), [buildMdcList(_airportList)]);
+  AirportList(final List<AirportData> this._airportList):
+        _list = buildMdcList(_airportList),
+        super(new DivElement()){
+    buildWithChilds([_list]);
+  }
+
+  Stream<int> menuSelectStream() => _list.selectStream();
 
   static MdcList buildMdcList(final List<AirportData> airportList) {
     final List<MdcListItem> menuList =
